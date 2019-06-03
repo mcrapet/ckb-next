@@ -135,6 +135,8 @@ if (MACOS OR LINUX)
               kblightwidget.cpp
               kbmanager.cpp
               kbmode.cpp
+              kbmodeeventmgr.cpp
+              kbwindowinfo.cpp
               kbperf.cpp
               kbprofile.cpp
               kbprofiledialog.cpp
@@ -184,6 +186,7 @@ if (MACOS OR LINUX)
               kblightwidget.h
               kbmanager.h
               kbmode.h
+              kbmodeeventmgr.h
               kbperf.h
               kbprofiledialog.h
               kbprofile.h
@@ -207,6 +210,9 @@ if (MACOS OR LINUX)
               rebindwidget.h
               rlistwidget.h
               settingswidget.h
+              kbwindowinfo.h
+              xcb/xwindowdetector.h
+              xcb/xwindowinfo.h
               animadddialog.ui
               animdetailsdialog.ui
               animsettingdialog.ui
@@ -217,6 +223,7 @@ if (MACOS OR LINUX)
               kbanimwidget.ui
               kbbindwidget.ui
               kblightwidget.ui
+              kbmodeeventmgr.ui
               kbprofiledialog.ui
               kbwidget.ui
               kperfwidget.ui
@@ -260,6 +267,11 @@ elseif (LINUX)
             ckb-next
                 PRIVATE
                     USE_XCB_EWMH)
+
+            target_sources(
+            ckb-next
+                PRIVATE
+                xcb/xwindowdetector.cpp)
             else()
                 message(FATAL_ERROR "XCB-EWMH was not found. Either install it or pass -DUSE_XCB=0 to disable active window detection.")
         endif()

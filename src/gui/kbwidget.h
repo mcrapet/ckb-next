@@ -5,6 +5,7 @@
 #include <QListWidgetItem>
 #include <QWidget>
 #include "kb.h"
+#include "xcb/xwindowdetector.h"
 
 // Central widget for displaying/controlling a device
 
@@ -17,7 +18,7 @@ class KbWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit KbWidget(QWidget* parent, Kb* _device);
+    explicit KbWidget(QWidget* parent, Kb* _device, XWindowDetector* windowDetector);
     ~KbWidget();
 
     // Device handle
@@ -72,6 +73,7 @@ private slots:
     void switchToProfile(QString profile);
     void switchToMode(QString mode);
     void on_pollRateBox_currentIndexChanged(const QString &arg1);
+    void switchToModeByFocus(XWindowInfo win);
 };
 
 #endif // KBWIDGET_H
