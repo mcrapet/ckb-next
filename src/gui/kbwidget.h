@@ -2,7 +2,7 @@
 #define KBWIDGET_H
 
 #include <QFile>
-#include <QListWidgetItem>
+#include <QTableWidgetItem>
 #include <QWidget>
 #include "kb.h"
 #include "xcb/xwindowdetector.h"
@@ -48,20 +48,24 @@ private:
     const static int GUID = Qt::UserRole;
     const static int NEW_FLAG = Qt::UserRole + 1;
     int getPollRateBoxIdx(QString poll);
+    QIcon modeIcon(int i);
+    QIcon eventIcon(KbMode *currentMode);
 
+
+    void openEventMgr(KbMode *mode);
+
+    void toggleEvent(KbMode *mode, QTableWidgetItem *item);
 private slots:
     void updateProfileList();
     void profileChanged();
     void on_profileBox_activated(int index);
-
-    QIcon modeIcon(int i);
     void addNewModeItem();
 
     void modeChanged(bool spontaneous = true);
-    void on_modesList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
+    void on_modesList_currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous);
     void modesList_reordered();
-    void on_modesList_itemChanged(QListWidgetItem *item);
-    void on_modesList_itemClicked(QListWidgetItem *item);
+    void on_modesList_itemChanged(QTableWidgetItem *item);
+    void on_modesList_itemClicked(QTableWidgetItem *item);
     void on_modesList_customContextMenuRequested(const QPoint &pos);
 
     void devUpdate();
@@ -74,6 +78,7 @@ private slots:
     void switchToMode(QString mode);
     void on_pollRateBox_currentIndexChanged(const QString &arg1);
     void switchToModeByFocus(XWindowInfo win);
+    void on_modesList_cellDoubleClicked(int row, int column);
 };
 
 #endif // KBWIDGET_H
