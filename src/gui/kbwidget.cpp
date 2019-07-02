@@ -272,6 +272,7 @@ void KbWidget::on_modesList_currentItemChanged(QTableWidgetItem *current, QTable
 }
 
 void KbWidget::modesList_reordered(){
+    qDebug() << "Reordered";
     KbProfile* currentProfile = device->currentProfile();
     // Rebuild mode list from items
     QList<KbMode*> newModes;
@@ -293,7 +294,7 @@ void KbWidget::modesList_reordered(){
     currentProfile->modes(newModes);
 }
 
-void KbWidget::on_modesList_itemChanged(QTableWidgetItem *item){
+void KbWidget::on_modesList_itemChanged(QTableWidgetItem* item){
     if(!item || !currentMode || item->data(GUID).toUuid() != currentMode->id().guid)
         return;
     currentMode->name(item->text());
@@ -301,7 +302,7 @@ void KbWidget::on_modesList_itemChanged(QTableWidgetItem *item){
     item->setText(currentMode->name());
 }
 
-void KbWidget::toggleEvent(KbMode* mode, QTableWidgetItem* item)
+void KbWidget::toggleEventEnabled(KbMode* mode, QTableWidgetItem* item)
 {
     mode->winInfo()->enabled = !mode->winInfo()->enabled;
     item->setIcon(eventIcon(currentMode));
@@ -313,9 +314,10 @@ void KbWidget::on_modesList_itemClicked(QTableWidgetItem* item){
         // set selected mode
         ui->modesList->setCurrentItem(ui->modesList->item(item->row()));
         // If empty, open the manager as well
-        toggleEvent(currentMode, item);
+        toggleEventEnabled(currentMode, item);
         if(currentMode->winInfo()->isEmpty())
-            openEventMgr(currentMode);
+            openEventMgr(currentMode, item);
+        currentMode->winInfo()->setNeedsSave();
         return;
     }
     // Check if new mode was clicked
@@ -340,9 +342,9 @@ void KbWidget::on_modesList_itemClicked(QTableWidgetItem* item){
     }
 }
 
-void KbWidget::openEventMgr(KbMode* mode)
+void KbWidget::openEventMgr(KbMode* mode, QTableWidgetItem* item)
 {
-    KbModeEventMgr* mgr = new KbModeEventMgr(this, mode->winInfo(), mode->name());
+    KbModeEventMgr* mgr = new KbModeEventMgr(this, mode, item);
     // We set this attribute so that we don't have to free it
     mgr->setAttribute(Qt::WA_DeleteOnClose);
     mgr->show();
@@ -428,7 +430,7 @@ void KbWidget::on_modesList_customContextMenuRequested(const QPoint &pos){
     }
 #ifdef USE_XCB_EWMH
      else if(result == focusevts) {
-        openEventMgr(currentProfile->currentMode());
+        openEventMgr(currentProfile->currentMode(), ui->modesList->getIconItem(item));
     }
 #endif
 }
@@ -666,7 +668,7 @@ void KbWidget::on_modesList_cellDoubleClicked(int row, int column)
     // Check which column was double clicked
     if(column)
     {
-        openEventMgr(currentMode);
+        openEventMgr(currentMode, ui->modesList->getIconItem(item));
         return;
     }
 

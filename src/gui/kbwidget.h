@@ -30,6 +30,7 @@ public:
     // Update the "Check for updates" label with the current status
     void updateFwButton();
     void setTabBarEnabled(const bool e);
+    static QIcon eventIcon(KbMode* currentMode);
 
 public slots:
     // Show a tab
@@ -49,12 +50,9 @@ private:
     const static int NEW_FLAG = Qt::UserRole + 1;
     int getPollRateBoxIdx(QString poll);
     QIcon modeIcon(int i);
-    QIcon eventIcon(KbMode *currentMode);
 
-
-    void openEventMgr(KbMode *mode);
-
-    void toggleEvent(KbMode *mode, QTableWidgetItem *item);
+    void openEventMgr(KbMode* mode, QTableWidgetItem* item);
+    void toggleEventEnabled(KbMode* mode, QTableWidgetItem* item);
 private slots:
     void updateProfileList();
     void profileChanged();
@@ -62,10 +60,10 @@ private slots:
     void addNewModeItem();
 
     void modeChanged(bool spontaneous = true);
-    void on_modesList_currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous);
+    void on_modesList_currentItemChanged(QTableWidgetItem* current, QTableWidgetItem* previous);
     void modesList_reordered();
-    void on_modesList_itemChanged(QTableWidgetItem *item);
-    void on_modesList_itemClicked(QTableWidgetItem *item);
+    void on_modesList_itemChanged(QTableWidgetItem* item);
+    void on_modesList_itemClicked(QTableWidgetItem* item);
     void on_modesList_customContextMenuRequested(const QPoint &pos);
 
     void devUpdate();
