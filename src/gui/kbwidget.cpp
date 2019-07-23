@@ -272,7 +272,6 @@ void KbWidget::on_modesList_currentItemChanged(QTableWidgetItem *current, QTable
 }
 
 void KbWidget::modesList_reordered(){
-    qDebug() << "Reordered";
     KbProfile* currentProfile = device->currentProfile();
     // Rebuild mode list from items
     QList<KbMode*> newModes;
@@ -311,17 +310,22 @@ void KbWidget::toggleEventEnabled(KbMode* mode, QTableWidgetItem* item)
 void KbWidget::on_modesList_itemClicked(QTableWidgetItem* item){
     if(item->column())
     {
-        // set selected mode
-        ui->modesList->setCurrentItem(ui->modesList->item(item->row()));
-        // If empty, open the manager as well
-        toggleEventEnabled(currentMode, item);
-        if(currentMode->winInfo()->isEmpty())
-            openEventMgr(currentMode, item);
-        currentMode->winInfo()->setNeedsSave();
-        return;
+        QTableWidgetItem* modeItem = ui->modesList->item(item->row());
+        if(modeItem->data(NEW_FLAG).toInt() == 1) {
+            item = modeItem;
+        } else {
+            // set selected mode
+            ui->modesList->setCurrentItem(modeItem);
+            // If empty, open the manager as well
+            toggleEventEnabled(currentMode, item);
+            if(currentMode->winInfo()->isEmpty())
+                openEventMgr(currentMode, item);
+            currentMode->winInfo()->setNeedsSave();
+            return;
+        }
     }
-    // Check if new mode was clicked
     QUuid guid = item->data(GUID).toUuid();
+    // Check if new mode was clicked
     if(guid.isNull() && item->data(NEW_FLAG).toInt() == 1){
         // "New mode" item. Clear text and start editing
         item->setText("");
@@ -337,6 +341,7 @@ void KbWidget::on_modesList_itemClicked(QTableWidgetItem* item){
         item->setData(GUID, newMode->id().guid);
         item->setData(NEW_FLAG, 0);
         device->setCurrentMode(newMode, false);
+        ui->modesList->getIconItem(item)->setIcon(eventIcon(currentMode));
         // Create another "new mode" item to replace this one
         addNewModeItem();
     }
@@ -359,7 +364,14 @@ void KbWidget::openEventMgr(KbMode* mode, QTableWidgetItem* item)
 /// When clicking on a command it is located and executed.
 void KbWidget::on_modesList_customContextMenuRequested(const QPoint &pos){
     QTableWidgetItem* item = ui->modesList->itemAt(pos);
-    if(!item || !currentMode || item->data(GUID).toUuid() != currentMode->id().guid)
+    if(!item || !currentMode)
+        return;
+    // If the user right clicks on the lightning, open the context menu for the mode
+    qDebug() << item->column();
+    if(item->column() > 0)
+        item = ui->modesList->item(item->row());
+
+    if(item->data(GUID).toUuid() != currentMode->id().guid)
         return;
     KbProfile* currentProfile = device->currentProfile();
     int index = currentProfile->indexOf(currentMode);

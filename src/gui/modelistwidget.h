@@ -26,6 +26,7 @@ private slots:
     void timerTick();
     void enter(QTableWidgetItem* item);
     void change(QTableWidgetItem* item);
+    void cellHovered(int y, int x);
 
 private:
     QVariant        currentData;
@@ -36,6 +37,10 @@ private:
     const static int DATA_ROLE = Qt::UserRole + 100;
 
     void rescanItems();
+
+    void dropEvent(QDropEvent* event);
+    void focusOutEvent(QFocusEvent* event);
+    void leaveEvent(QEvent* event);
 };
 
 #endif // MODELISTWIDGET_H

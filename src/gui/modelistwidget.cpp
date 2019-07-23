@@ -3,6 +3,9 @@
 #include <QHeaderView>
 #include <QDebug>
 #include <QTableWidgetItem>
+#include "modelistdelegate.h"
+#include <QDropEvent>
+#include "modelistproxystyle.h"
 
 ModeListWidget::ModeListWidget(QWidget *parent) :
     QTableWidget(parent)
@@ -13,12 +16,16 @@ ModeListWidget::ModeListWidget(QWidget *parent) :
 
     connect(this, SIGNAL(itemEntered(QTableWidgetItem*)), this, SLOT(enter(QTableWidgetItem*)));
     connect(this, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(change(QTableWidgetItem*)));
+    connect(this, &QTableWidget::cellEntered, this, &ModeListWidget::cellHovered);
 }
 
 // For some reason this can't be called in the constructor
 void ModeListWidget::setup()
 {
-    verticalHeader()->setSectionsMovable(true);
+    //setItemDelegate(new ModeListDelegate(this));
+    setStyle(new ModeListProxyStyle(style()));
+    setMouseTracking(true);
+    //verticalHeader()->setSectionsMovable(false);
     setColumnCount(2);
     horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
@@ -26,7 +33,6 @@ void ModeListWidget::setup()
 }
 
 void ModeListWidget::timerTick(){
-    qDebug() << "Tick";
     bool reordered = false;
     QTableWidgetItem* reselect = 0;
     QList<QVariant> newItems;
@@ -67,6 +73,21 @@ void ModeListWidget::change(QTableWidgetItem* item){
     reorderTimer.start();
 }
 
+void ModeListWidget::cellHovered(int y, int x)
+{
+    for(int j = 0; j < rowCount(); j++)
+    {
+        QBrush brush = palette().base();
+        if(j == y && selectedItems().at(0)->row() == j)
+            continue;
+        else if(j == y)
+            brush = palette().background();
+
+        for(int i = 0; i < 2; i++)
+            QTableWidget::item(j, i)->setBackground(brush);
+    }
+}
+
 void ModeListWidget::rescanItems(){
     QList<QVariant> newItems;
     int c = rowCount();
@@ -81,6 +102,43 @@ void ModeListWidget::rescanItems(){
     }
     previousItems = newItems;
 }
+
+void ModeListWidget::dropEvent(QDropEvent *event)
+{
+    int selectedItemRow = selectedItems().at(0)->row();
+    // Find destination
+    int destRow = itemAt(event->pos())->row();
+
+    // Take source
+    QTableWidgetItem* selectedItemArray[2] =
+    {
+        takeItem(selectedItemRow, 0),
+        takeItem(selectedItemRow, 1),
+    };
+
+    // Place dest in source
+    setItem(selectedItemRow, 0, takeItem(destRow, 0));
+    setItem(selectedItemRow, 1, takeItem(destRow, 1));
+
+    // Place source in dest
+    setItem(destRow, 0, selectedItemArray[0]);
+    setItem(destRow, 1, selectedItemArray[1]);
+}
+
+void ModeListWidget::focusOutEvent(QFocusEvent* event)
+{
+    qDebug() << "Focus out";
+    QTableWidget::focusOutEvent(event);
+}
+
+void ModeListWidget::leaveEvent(QEvent* event)
+{
+    qDebug() << "leave event";
+    QTableWidgetItem* itm = selectedItems().at(0);
+    cellHovered(itm->row(), itm->column());
+    QTableWidget::leaveEvent(event);
+}
+
 #include <QDebug>
 void ModeListWidget::addItem(QTableWidgetItem* itm, QIcon eventicn)
 {
@@ -99,6 +157,7 @@ QTableWidgetItem* ModeListWidget::getIconItem(QTableWidgetItem* item)
 
 void ModeListWidget::setCurrentRow(int idx)
 {
+    QTableWidget::clearSelection();
     QTableWidget::setCurrentCell(idx, 0, QItemSelectionModel::Rows | QItemSelectionModel::Select);
 }
 

@@ -28,10 +28,10 @@ private slots:
 
 private:
     KbWindowInfo* info;
-    Ui::KbModeEventMgr* ui;
-    void handleClose();
     QTableWidgetItem* item;
     KbMode* mode;
+    Ui::KbModeEventMgr* ui;
+    void handleClose();
 };
 
 #endif // KBMODEEVENTMGR_H
