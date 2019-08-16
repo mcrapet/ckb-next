@@ -39,7 +39,6 @@ private:
     void rescanItems();
 
     void dropEvent(QDropEvent* event);
-    void focusOutEvent(QFocusEvent* event);
     void leaveEvent(QEvent* event);
 };
 

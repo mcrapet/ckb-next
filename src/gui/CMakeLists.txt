@@ -152,8 +152,6 @@ if (MACOS OR LINUX)
               mainwindow.cpp
               modeselectdialog.cpp
               modelistwidget.cpp
-              modelistdelegate.cpp
-              modelistproxystyle.cpp
               mperfwidget.cpp
               nouserinputtextedit.cpp
               nowheelcombobox.cpp
@@ -206,8 +204,6 @@ if (MACOS OR LINUX)
               media.h
               modeselectdialog.h
               modelistwidget.h
-              modelistdelegate.h
-              modelistproxystyle.h
               mperfwidget.h
               nouserinputtextedit.h
               nowheelcombobox.h

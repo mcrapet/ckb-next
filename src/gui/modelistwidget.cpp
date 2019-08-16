@@ -3,9 +3,7 @@
 #include <QHeaderView>
 #include <QDebug>
 #include <QTableWidgetItem>
-#include "modelistdelegate.h"
 #include <QDropEvent>
-#include "modelistproxystyle.h"
 
 ModeListWidget::ModeListWidget(QWidget *parent) :
     QTableWidget(parent)
@@ -22,14 +20,11 @@ ModeListWidget::ModeListWidget(QWidget *parent) :
 // For some reason this can't be called in the constructor
 void ModeListWidget::setup()
 {
-    //setItemDelegate(new ModeListDelegate(this));
-    setStyle(new ModeListProxyStyle(style()));
     setMouseTracking(true);
     //verticalHeader()->setSectionsMovable(false);
     setColumnCount(2);
     horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-    qDebug() << "setup called";
 }
 
 void ModeListWidget::timerTick(){
@@ -125,21 +120,13 @@ void ModeListWidget::dropEvent(QDropEvent *event)
     setItem(destRow, 1, selectedItemArray[1]);
 }
 
-void ModeListWidget::focusOutEvent(QFocusEvent* event)
-{
-    qDebug() << "Focus out";
-    QTableWidget::focusOutEvent(event);
-}
-
 void ModeListWidget::leaveEvent(QEvent* event)
 {
-    qDebug() << "leave event";
     QTableWidgetItem* itm = selectedItems().at(0);
     cellHovered(itm->row(), itm->column());
     QTableWidget::leaveEvent(event);
 }
 
-#include <QDebug>
 void ModeListWidget::addItem(QTableWidgetItem* itm, QIcon eventicn)
 {
     // Get the number of rows, and add the new item to col 0, row x
