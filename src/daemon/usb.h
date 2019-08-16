@@ -109,7 +109,8 @@
 #define IS_HARPOON(kb)       ((kb)->vendor == V_CORSAIR && ((kb)->product == P_HARPOON || (kb)->product == P_HARPOON_PRO))
 
 #define P_GLAIVE             0x1b34
-#define IS_GLAIVE(kb)        ((kb)->vendor == V_CORSAIR && (kb)->product == P_GLAIVE)
+#define P_GLAIVE_PRO         0x1b74
+#define IS_GLAIVE(kb)        ((kb)->vendor == V_CORSAIR && ((kb)->product == P_GLAIVE || (kb)->product == P_GLAIVE_PRO))
 
 #define P_KATAR              0x1b22
 #define IS_KATAR(kb)         ((kb)->vendor == V_CORSAIR && (kb)->product == P_KATAR)
@@ -196,7 +197,7 @@ const char* product_str(ushort product);
 /// Used for new devices that come with V3 firmware endpoint configuration out of the factory, but have fwversion < 0x300.
 /// Note: only the RGB variant of the K68 needs a v3 override.
 /// Note: P_K70_MK2 doesn't seem to require this, but it was added as a precaution
-#define IS_V3_OVERRIDE(kb)              ((kb)->product == P_K68 || (kb)->product == P_K70_MK2 || (kb)->product == P_K70_MK2SE || (kb)->product == P_STRAFE_MK2 || (kb)->product == P_IRONCLAW || (kb)->product == P_SCIMITAR_ELITE)
+#define IS_V3_OVERRIDE(kb)              ((kb)->product == P_K68 || (kb)->product == P_K70_MK2 || (kb)->product == P_K70_MK2SE || (kb)->product == P_STRAFE_MK2 || (kb)->product == P_IRONCLAW || (kb)->product == P_SCIMITAR_ELITE || (kb)->product == P_GLAIVE_PRO)
 
 /// Used when a device has a firmware with a low version number that uses the new endpoint configuration.
 #define IS_V2_OVERRIDE(kb)              (IS_V3_OVERRIDE(kb) || IS_PLATINUM(kb) || IS_K63(kb) || IS_K68(kb) || IS_HARPOON(kb) || IS_GLAIVE(kb) || IS_KATAR(kb) || (kb)->product == P_STRAFE_NRGB_2 || IS_POLARIS(kb) || IS_ST100(kb) || (kb)->product == P_SCIMITAR_PRO || (kb)->product == P_K66)

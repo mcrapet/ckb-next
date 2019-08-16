@@ -78,6 +78,7 @@ device_desc models[] = {
     { V_CORSAIR, P_HARPOON_PRO, },
     { V_CORSAIR, P_KATAR, },
     { V_CORSAIR, P_IRONCLAW, },
+    { V_CORSAIR, P_GLAIVE_PRO, },
     // Mousepads
     { V_CORSAIR, P_POLARIS, },
     // Headset stands
@@ -174,7 +175,7 @@ const char* product_str(ushort product){
         return "scimitar";
     if(product == P_HARPOON || product == P_HARPOON_PRO)
         return "harpoon";
-    if(product == P_GLAIVE)
+    if(product == P_GLAIVE || product == P_GLAIVE_PRO)
         return "glaive";
     if(product == P_KATAR)
         return "katar";
