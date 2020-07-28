@@ -95,7 +95,7 @@ int os_usbsend_control(usbdevice* kb, uchar* data, ushort len, uchar bRequest, u
 ///
 int os_usbsend(usbdevice* kb, const uchar* out_msg, int is_recv, const char* file, int line) {
     int res;
-    if (kb->fwversion >= 0x120 || IS_V2_OVERRIDE(kb)){
+    if (kb->fwversion >= 0x120 || IS_V2_OVERRIDE(kb) || kb->protocol == PROTO_BRAGI){
         // If we need to read a response, lock the interrupt mutex
         if(is_recv)
             if(pthread_mutex_lock(intmutex(kb)))
@@ -168,7 +168,7 @@ int os_usbsend(usbdevice* kb, const uchar* out_msg, int is_recv, const char* fil
 ///
 int os_usbrecv(usbdevice* kb, uchar* in_msg, const char* file, int line){
     int res;
-    if(kb->fwversion >= 0x120 || IS_V2_OVERRIDE(kb)){
+    if(kb->fwversion >= 0x120 || IS_V2_OVERRIDE(kb) || kb->protocol == PROTO_BRAGI){
         // Wait for 2s
         int condret = cond_nanosleep(intcond(kb), intmutex(kb), 2000000000);
         if(condret != 0){
