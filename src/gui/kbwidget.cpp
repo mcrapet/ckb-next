@@ -17,8 +17,8 @@
 KbWidget::KbWidget(QWidget *parent, Kb *_device, XWindowDetector* windowDetector) :
     QWidget(parent),
     device(_device), hasShownNewFW(false),
-    ui(new Ui::KbWidget),
-    currentMode(0)
+    ui(new Ui::KbWidget), currentMode(0),
+    prevmode(nullptr)
 {
     ui->setupUi(this);
     ui->modesList->setup();
@@ -613,7 +613,7 @@ void KbWidget::on_pollRateBox_currentIndexChanged(const QString &arg1)
 // Returns _false_ if a match is found
 static inline bool checkForWinInfoMatch(KbWindowInfo* kbinfo, XWindowInfo* wininfo)
 {
-    if(kbinfo->isEmpty())
+    if(kbinfo->isEmpty() || !kbinfo->enabled)
         return true;
 
     Qt::CaseSensitivity sensitivity = Qt::CaseSensitive;
@@ -638,7 +638,6 @@ static inline bool checkForWinInfoMatch(KbWindowInfo* kbinfo, XWindowInfo* winin
     return kbinfo->wm_instance_name.isEmpty() || kbinfo->wm_instance_name != wininfo->wm_instance_name;
 }
 
-KbMode* prevmode = nullptr;
 void KbWidget::switchToModeByFocus(XWindowInfo win)
 {
     if(win.isEmpty())

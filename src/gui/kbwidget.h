@@ -53,6 +53,8 @@ private:
 
     void openEventMgr(KbMode* mode, QTableWidgetItem* item);
     void toggleEventEnabled(KbMode* mode, QTableWidgetItem* item);
+    KbMode* prevmode;
+
 private slots:
     void updateProfileList();
     void profileChanged();
