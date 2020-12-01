@@ -35,12 +35,12 @@ void ModeListWidget::timerTick(){
     int c = rowCount();
     for(int i = 0; i < c; i++){
         QTableWidgetItem* itm = QTableWidget::item(i, 0);
-        QVariant data = itm->data(DATA_ROLE);
-        newItems.append(data);
-        if(i >= previousItems.count() || data != previousItems[i])
+        QVariant itmdata = itm->data(DATA_ROLE);
+        newItems.append(itmdata);
+        if(i >= previousItems.count() || itmdata != previousItems[i])
             reordered = true;
         // Re-select the dragged item (if any)
-        if(data == dragged)
+        if(itmdata == dragged)
             reselect = itm;
     }
     if(previousItems.length() != newItems.length())
@@ -87,13 +87,13 @@ void ModeListWidget::rescanItems(){
     QList<QVariant> newItems;
     int c = rowCount();
     for(int i = 0; i < c; i++){
-        QVariant data = QTableWidget::item(i, 0)->data(DATA_ROLE);
-        if(data.isNull()){
+        QVariant itmdata = QTableWidget::item(i, 0)->data(DATA_ROLE);
+        if(itmdata.isNull()){
             // Generate the ID for this item if it doesn't already exist
-            data = QUuid::createUuid();
-            QTableWidget::item(i, 0)->setData(DATA_ROLE, data);
+            itmdata = QUuid::createUuid();
+            QTableWidget::item(i, 0)->setData(DATA_ROLE, itmdata);
         }
-        newItems.append(data);
+        newItems.append(itmdata);
     }
     previousItems = newItems;
 }
