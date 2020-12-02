@@ -2,9 +2,10 @@
 #define KBWIDGET_H
 
 #include <QFile>
-#include <QListWidgetItem>
+#include <QTableWidgetItem>
 #include <QWidget>
 #include "kb.h"
+#include "xcb/xwindowdetector.h"
 
 // Central widget for displaying/controlling a device
 
@@ -17,7 +18,7 @@ class KbWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit KbWidget(QWidget* parent, Kb* _device);
+    explicit KbWidget(QWidget* parent, Kb* _device, XWindowDetector* windowDetector);
     ~KbWidget();
 
     // Device handle
@@ -48,30 +49,27 @@ private:
     const static int NEW_FLAG = Qt::UserRole + 1;
     int getPollRateBoxIdx(QString poll);
 
+    KbMode* prevmode;
+    void openEventMgr(KbMode* mode);
 private slots:
     void updateProfileList();
-    void profileChanged();
     void on_profileBox_activated(int index);
 
-    QIcon modeIcon(int i);
-    void addNewModeItem();
-
-    void modeChanged(bool spontaneous = true);
-    void on_modesList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
-    void modesList_reordered();
-    void on_modesList_itemChanged(QListWidgetItem *item);
-    void on_modesList_itemClicked(QListWidgetItem *item);
+    void modeChanged();
+    void currentSelectionChanged(const QModelIndex& current, const QModelIndex& previous);
     void on_modesList_customContextMenuRequested(const QPoint &pos);
 
     void devUpdate();
-    void modeUpdate();
     void on_hwSaveButton_clicked();
     void on_tabWidget_currentChanged(int index);
     void on_fwUpdButton_clicked();
     void on_layoutBox_activated(int index);
     void switchToProfile(QString profile);
     void switchToMode(QString mode);
-    void on_pollRateBox_currentIndexChanged(const QString &arg1);
+    void on_pollRateBox_currentIndexChanged(const QString& arg1);
+    void switchToModeByFocus(XWindowInfo win);
+    void on_modesList_doubleClicked(const QModelIndex& index);
+    void on_modesList_clicked(const QModelIndex& index);
 };
 
 #endif // KBWIDGET_H
