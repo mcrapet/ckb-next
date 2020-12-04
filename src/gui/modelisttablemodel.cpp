@@ -1,13 +1,12 @@
 #include "modelisttablemodel.h"
 #include <QIcon>
-#include <QDebug>
 #include <QFont>
 #include <QApplication>
 #include <QStyle>
 #include <QStyledItemDelegate>
 
 ModeListTableModel::ModeListTableModel(Kb*dev, QObject*parent) : QAbstractTableModel(parent), device(dev),
-    highlightedRow(-1)
+    highlightedRow(-1), _hasFocus(false)
 {
     connect(device, &Kb::profileAboutToChange, this, &ModeListTableModel::profileAboutToChange);
     connect(device, &Kb::profileChanged, this, &ModeListTableModel::profileChanged);
@@ -27,7 +26,6 @@ void ModeListTableModel::profileChanged(){
     // and we'll always have a valid profile
     emit endResetModel();
     KbProfile* currentProfile = device->currentProfile();
-    qDebug() << "Profile changed to" << currentProfile;
     for(int i = 0; i < currentProfile->modeCount(); i++){
         connect(currentProfile->at(i)->winInfo(), &KbWindowInfo::enableStateChanged, this, [this, i](){
             QModelIndex changed = index(i, COL_EVENT_ICON);
@@ -45,12 +43,7 @@ int ModeListTableModel::rowCount(const QModelIndex& parent) const {
 }
 
 int ModeListTableModel::columnCount(const QModelIndex& parent) const {
-#warning "FIXME, the fallback does not work"
-#ifdef USE_XCB_EWMH
     return COL_MODE_MAX;
-#else
-    return COL_MODE_MAX - 1;
-#endif
 }
 
 QIcon ModeListTableModel::modeIcon(const int i) const{
@@ -76,8 +69,7 @@ QVariant ModeListTableModel::data(const QModelIndex& index, int role) const{
         return QVariant();
     const int row = index.row();
     const int col = index.column();
-
-    if (role == Qt::DisplayRole || role == Qt::EditRole){
+    if (role == Qt::DisplayRole || role == Qt::EditRole) {
         // If the index is past modeCount, then we are adding the New mode... button
         if(row > prof->modeCount() - 1){
             if(col == COL_MODE_NAME)
@@ -104,9 +96,11 @@ QVariant ModeListTableModel::data(const QModelIndex& index, int role) const{
         QFont font;
         font.setItalic(true);
         return font;
-    } else if(role == Qt::BackgroundRole && row == highlightedRow) {
-        // Highlight the current row being hovered
-        return QApplication::style()->standardPalette().background();
+    } else if(role == Qt::BackgroundRole) {
+        if(col == COL_EVENT_ICON && row == activeRow && _hasFocus)
+            return QApplication::style()->standardPalette().highlight();
+        else if(row == highlightedRow)
+            return QApplication::style()->standardPalette().window();
     }
     return QVariant();
 }
@@ -141,11 +135,6 @@ bool ModeListTableModel::setData(const QModelIndex& index, const QVariant& value
     return true;
 }
 
-void ModeListTableModel::setHighlightedRow(int row) {
-    highlightedRow = row;
-    emit dataChanged(index(0, 0), index(rowCount()-1, columnCount()-1), {Qt::DecorationRole});
-}
-
 int ModeListTableModel::addNewMode(){
     KbMode* newMode = device->newMode();
     // "Add" the new mode item back
@@ -178,7 +167,6 @@ bool ModeListTableModel::dropMimeData(const QMimeData* data, Qt::DropAction acti
     stream >> srcrow >> srccol >> roledata;
     if(srcrow < dstrow)
         dstrow--;
-    qDebug() << "Move" << srcrow << "to" << dstrow;
     if(srcrow == dstrow)
         return false;
 

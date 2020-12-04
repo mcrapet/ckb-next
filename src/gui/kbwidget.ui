@@ -75,6 +75,9 @@
      <property name="lineWidth">
       <number>1</number>
      </property>
+     <property name="autoScroll">
+      <bool>false</bool>
+     </property>
      <property name="editTriggers">
       <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
      </property>
@@ -107,6 +110,12 @@
        <width>24</width>
        <height>24</height>
       </size>
+     </property>
+     <property name="verticalScrollMode">
+      <enum>QAbstractItemView::ScrollPerPixel</enum>
+     </property>
+     <property name="horizontalScrollMode">
+      <enum>QAbstractItemView::ScrollPerPixel</enum>
      </property>
      <property name="showGrid">
       <bool>false</bool>

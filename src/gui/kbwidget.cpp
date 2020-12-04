@@ -27,12 +27,6 @@ KbWidget::KbWidget(QWidget *parent, Kb *_device, XWindowDetector* windowDetector
     connect(device, &Kb::profileRenamed, this, &KbWidget::updateProfileList);
     connect(device, &Kb::profileAdded, this, &KbWidget::updateProfileList);
     connect(device, &Kb::modeChanged, this, &KbWidget::modeChanged);
-    connect(ui->modesList->model(), &QAbstractItemModel::layoutChanged, this, [this](){
-        const int index = device->currentProfile()->indexOf(device->currentMode());
-        if(index < 0)
-            return;
-        ui->modesList->setCurrentIndex(ui->modesList->model()->index(index, 0));
-    });
     connect(device, &Kb::infoUpdated, this, &KbWidget::devUpdate);
     connect(MainWindow::mainWindow, &MainWindow::switchToProfileCLI, this, &KbWidget::switchToProfile);
     connect(MainWindow::mainWindow, &MainWindow::switchToModeCLI, this, &KbWidget::switchToMode);
@@ -193,6 +187,8 @@ void KbWidget::on_profileBox_activated(int index){
         return;
     }
     device->setCurrentProfile(device->profiles()[index]);
+    // Focus the mode list to highlight the whole row properly
+    ui->modesList->setFocus();
     // Device will emit profileChanged() and modeChanged() signals to update UI
 }
 
@@ -262,7 +258,9 @@ void KbWidget::on_modesList_customContextMenuRequested(const QPoint& pos){
 #endif
     menu.addAction(moveup);
     menu.addAction(movedown);
+    ui->modesList->setIgnoreFocusLoss(true);
     QAction* result = menu.exec(QCursor::pos());
+    ui->modesList->setIgnoreFocusLoss(false);
     if(result == rename){
         ui->modesList->edit(ui->modesList->model()->index(idx.row(), ModeListTableModel::COL_MODE_NAME, idx.parent()));
     } else if(result == duplicate){
