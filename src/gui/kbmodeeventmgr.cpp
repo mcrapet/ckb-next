@@ -4,12 +4,15 @@
 #include <QDebug>
 #include "kbwidget.h"
 #include <QCloseEvent>
+#include "idletimer.h"
 
 KbModeEventMgr::KbModeEventMgr(QWidget* parent, KbMode* m) :
     QDialog(parent), info(m->winInfo()),
     ui(new Ui::KbModeEventMgr)
 {
     ui->setupUi(this);
+    if(!IdleTimer::isWayland())
+        ui->waylandWarning->hide();
     ui->modeLabel->setText(QString(tr("Switch to mode \"%1\" when:")).arg(m->name()));
     ui->windowTitleLineEdit->setFocus();
     ui->windowTitleLineEdit->setText(info->windowTitle);
