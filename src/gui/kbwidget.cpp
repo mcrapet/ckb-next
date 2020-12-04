@@ -523,8 +523,13 @@ void KbWidget::openEventMgr(KbMode* mode) {
 }
 
 void KbWidget::on_modesList_doubleClicked(const QModelIndex& index) {
-    if(index.column() == ModeListTableModel::COL_EVENT_ICON)
-        openEventMgr(currentMode);
+    if(index.column() != ModeListTableModel::COL_EVENT_ICON)
+        return;
+    // If the current state is "enabled", the previous one was "disabled", which means the user
+    // most likely just wanted to edit, and not disable it, so re-enable it.
+    if(!currentMode->winInfo()->isEnabled())
+        currentMode->winInfo()->setEnabled(true);
+    openEventMgr(currentMode);
 }
 
 void KbWidget::on_modesList_clicked(const QModelIndex& index) {
