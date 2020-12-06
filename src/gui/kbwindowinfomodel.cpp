@@ -1,6 +1,6 @@
 #include "kbwindowinfomodel.h"
 #include "kbwindowinfo.h"
-#include <QSize>
+#include <QMimeData>
 
 QString KbWindowInfoModel::caseSensitiveStr = tr("Case Sensitive");
 QString KbWindowInfoModel::caseInsensitiveStr = tr("Case Insensitive");
@@ -106,10 +106,13 @@ QVariant KbWindowInfoModel::data(const QModelIndex& index, int role) const {
 
 Qt::ItemFlags KbWindowInfoModel::flags(const QModelIndex& index) const
 {
+    if(!index.isValid())
+        return Qt::ItemIsDropEnabled;
+
     // Always disable the bottom right operator
     if(index.column() == COL_OPERATOR && index.row() == rowCount() - 1)
-        return Qt::ItemIsSelectable;
-    return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
+        return Qt::ItemIsSelectable | Qt::ItemIsDragEnabled;
+    return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsDragEnabled;
 }
 
 bool KbWindowInfoModel::setData(const QModelIndex& index, const QVariant& value, int role)
@@ -183,6 +186,33 @@ void KbWindowInfoModel::clear()
     emit beginRemoveRows(QModelIndex(), 0, rowCount()-1);
     wininfo->items.clear();
     emit endRemoveRows();
+}
+
+Qt::DropActions KbWindowInfoModel::supportedDropActions() const{
+    return Qt::MoveAction;
+}
+
+bool KbWindowInfoModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int dstrow, int column, const QModelIndex& parent){
+    if(dstrow == -1 || action != Qt::MoveAction || !data->hasFormat("application/x-qabstractitemmodeldatalist"))
+        return false;
+    QByteArray e = data->data("application/x-qabstractitemmodeldatalist");
+    QDataStream stream(&e, QIODevice::ReadOnly);
+
+    // Read only the first item. We only need column 0 and there is only a single row selected.
+    int srcrow = -1;
+    int srccol = -1;
+    QMap<int,  QVariant> roledata;
+    stream >> srcrow >> srccol >> roledata;
+    if(srcrow < dstrow)
+        dstrow--;
+    if(srcrow == dstrow)
+        return false;
+
+    emit layoutAboutToBeChanged();
+    wininfo->items.move(srcrow, dstrow);
+    emit layoutChanged();
+
+    return true;
 }
 
 void KbWindowInfoModelDropdownDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,

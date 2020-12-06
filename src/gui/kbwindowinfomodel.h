@@ -11,8 +11,8 @@ class KbWindowInfoModel : public QAbstractTableModel
     Q_OBJECT
 public:
     KbWindowInfoModel(KbWindowInfo* i, QObject* parent);
-    /*bool dropMimeData(const QMimeData* data, Qt::DropAction action, int dstrow, int column, const QModelIndex& parent);
-    Qt::DropActions supportedDropActions() const;*/
+    bool dropMimeData(const QMimeData* data, Qt::DropAction action, int dstrow, int column, const QModelIndex& parent);
+    Qt::DropActions supportedDropActions() const;
     int rowCount(const QModelIndex& parent = QModelIndex()) const;
     int columnCount(const QModelIndex& parent = QModelIndex()) const;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
