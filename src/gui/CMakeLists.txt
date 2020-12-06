@@ -137,6 +137,7 @@ if (MACOS OR LINUX)
               kbmode.cpp
               kbmodeeventmgr.cpp
               kbwindowinfo.cpp
+              kbwindowinfomodel.cpp
               kbperf.cpp
               kbprofile.cpp
               kbprofiledialog.cpp
@@ -215,6 +216,7 @@ if (MACOS OR LINUX)
               rlistwidget.h
               settingswidget.h
               kbwindowinfo.h
+              kbwindowinfomodel.h
               xcb/xwindowdetector.h
               xcb/xwindowinfo.h
               animadddialog.ui

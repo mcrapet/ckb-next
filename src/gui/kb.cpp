@@ -569,13 +569,8 @@ void Kb::readNotify(QString line){
                 hwLoading[0] = false;
             }
         }
-#warning "FIXME this is completely wrong"
-        /*if(_hwProfile == _currentProfile)
-            emit profileAboutToChange();*/
         hwProfile(newProfile);
         emit profileAdded();
-        /*if(_hwProfile == _currentProfile)
-            emit profileChanged();*/
     } else if(components[0] == "hwprofilename"){
         // Hardware profile name
         QString name = QUrl::fromPercentEncoding(components[1].toUtf8());

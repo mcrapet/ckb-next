@@ -5,32 +5,49 @@
 #include "kbwidget.h"
 #include <QCloseEvent>
 #include "idletimer.h"
+#include "kbwindowinfomodel.h"
 
 KbModeEventMgr::KbModeEventMgr(QWidget* parent, KbMode* m) :
     QDialog(parent), info(m->winInfo()),
-    ui(new Ui::KbModeEventMgr)
+    ui(new Ui::KbModeEventMgr), model(new KbWindowInfoModel(info, this)), backup(info->items),
+    delegate(new KbWindowInfoModelDropdownDelegate)
 {
+    connect(model, &KbWindowInfoModel::rowsInserted, this, &KbModeEventMgr::rowsChanged);
+    connect(model, &KbWindowInfoModel::rowsRemoved, this, &KbModeEventMgr::rowsChanged);
     ui->setupUi(this);
     if(!IdleTimer::isWayland())
         ui->waylandWarning->hide();
     ui->modeLabel->setText(QString(tr("Switch to mode \"%1\" when:")).arg(m->name()));
-    ui->windowTitleLineEdit->setFocus();
-    ui->windowTitleLineEdit->setText(info->windowTitle);
-    ui->programLineEdit->setText(info->program);
-    ui->instanceNameLineEdit->setText(info->wm_instance_name);
-    ui->classNameLineEdit->setText(info->wm_class_name);
+    ui->tableView->setModel(model);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(KbWindowInfoModel::COL_MATCH_TYPE, QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(KbWindowInfoModel::COL_VERB, QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(KbWindowInfoModel::COL_TARGET, QHeaderView::Stretch);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(KbWindowInfoModel::COL_CASE_INSENSITIVE, QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(KbWindowInfoModel::COL_OPERATOR, QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->hideSection(KbWindowInfoModel::COL_OPERATOR);
     ui->enableBox->setChecked(info->isEnabled());
-    if(info->windowTitleSubstr)
-        ui->isContainsCombo->setCurrentIndex(1);
+    rowsChanged(QModelIndex(), 0, 0);
+    ui->tableView->setItemDelegateForColumn(KbWindowInfoModel::COL_MATCH_TYPE, delegate);
+    ui->tableView->setItemDelegateForColumn(KbWindowInfoModel::COL_CASE_INSENSITIVE, delegate);
+    ui->tableView->setItemDelegateForColumn(KbWindowInfoModel::COL_VERB, delegate);
+    ui->tableView->setItemDelegateForColumn(KbWindowInfoModel::COL_OPERATOR, delegate);
+    connect(model, &KbWindowInfoModel::dataChanged, this, [this]
+            (const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles){
+        const int col = topLeft.column();
+        if(col != KbWindowInfoModel::COL_TARGET)
+            ui->tableView->resizeColumnToContents(col);
+    });
 }
 
 KbModeEventMgr::~KbModeEventMgr()
 {
     delete ui;
+    delete delegate;
 }
 
 void KbModeEventMgr::on_cancelBtn_clicked()
 {
+    info->items = backup;
     this->close();
 }
 
@@ -46,32 +63,36 @@ void KbModeEventMgr::closeEvent(QCloseEvent* evt)
 
 void KbModeEventMgr::on_okBtn_clicked()
 {
-    // Write everything
-    info->windowTitle = ui->windowTitleLineEdit->text();
-    info->program = ui->programLineEdit->text();
-    info->wm_instance_name = ui->instanceNameLineEdit->text();
-    info->wm_class_name = ui->classNameLineEdit->text();
-    info->windowTitleSubstr = ui->isContainsCombo->currentIndex();
     info->setEnabled(ui->enableBox->isChecked());
-
     this->close();
 }
 
-void KbModeEventMgr::on_clearbtn_clicked()
+void KbModeEventMgr::on_addbtn_clicked()
 {
-    ui->windowTitleLineEdit->clear();
-    ui->programLineEdit->clear();
-    ui->instanceNameLineEdit->clear();
-    ui->classNameLineEdit->clear();
-    ui->isContainsCombo->setCurrentIndex(0);
-
-    ui->okBtn->setFocus();
+    const int newitem = model->addItem();
+    const QModelIndex idx = model->index(newitem, KbWindowInfoModel::COL_TARGET);
+    ui->tableView->setCurrentIndex(idx);
+    ui->tableView->edit(idx);
 }
 
-void KbModeEventMgr::on_browseButton_clicked()
+void KbModeEventMgr::on_removebtn_clicked()
 {
-    QString file = QFileDialog::getOpenFileName(this, tr("Select a program"), QString(), QString(), nullptr, QFileDialog::DontResolveSymlinks);
-    if(file.isNull())
+    QModelIndexList selected = ui->tableView->selectionModel()->selectedRows();
+    if(selected.isEmpty())
         return;
-    ui->programLineEdit->setText(file);
+    model->removeItem(selected.at(0).row());
+}
+
+void KbModeEventMgr::rowsChanged(const QModelIndex& parent, int first, int last)
+{
+    if(model->rowCount() > 1)
+        ui->tableView->horizontalHeader()->showSection(KbWindowInfoModel::COL_OPERATOR);
+    else
+        ui->tableView->horizontalHeader()->hideSection(KbWindowInfoModel::COL_OPERATOR);
+}
+
+void KbModeEventMgr::on_clearbtn_2_clicked()
+{
+    model->clear();
+    ui->okBtn->setFocus();
 }

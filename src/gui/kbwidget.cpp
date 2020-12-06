@@ -216,10 +216,6 @@ void KbWidget::currentSelectionChanged(const QModelIndex& current, const QModelI
     device->setCurrentMode(mode);
 }
 
-void profileChanged(){
-#warning "Replace me with the model's implementation but more fine grained"
-}
-
 void KbWidget::on_modesList_customContextMenuRequested(const QPoint& pos){
     QModelIndex idx = ui->modesList->indexAt(pos);
     KbProfile* currentProfile = device->currentProfile();
@@ -266,6 +262,7 @@ void KbWidget::on_modesList_customContextMenuRequested(const QPoint& pos){
     } else if(result == duplicate){
         KbMode* newMode = device->newMode(currentMode);
         newMode->newId();
+        profileAboutToChange();
         currentProfile->insert(row + 1, newMode);
         // Update UI
         profileChanged();
@@ -275,6 +272,7 @@ void KbWidget::on_modesList_customContextMenuRequested(const QPoint& pos){
             return;
         if(QMessageBox::question(this, tr("Delete mode"), tr("Are you sure you want to delete this mode?")) != QMessageBox::Yes)
             return;
+        profileAboutToChange();
         currentProfile->removeAll(currentMode);
         currentMode->deleteLater();
         currentMode = nullptr;
@@ -285,12 +283,14 @@ void KbWidget::on_modesList_customContextMenuRequested(const QPoint& pos){
         else
             device->setCurrentMode(currentProfile->modes().last());
     } else if(result == moveup){
+        profileAboutToChange();
         currentProfile->removeAll(currentMode);
         currentProfile->insert(row - 1, currentMode);
         // Update UI
         profileChanged();
         modeChanged();
     } else if(result == movedown){
+        profileAboutToChange();
         currentProfile->removeAll(currentMode);
         currentProfile->insert(row + 1, currentMode);
         // Update UI
@@ -330,6 +330,7 @@ void KbWidget::devUpdate(){
 }
 
 void KbWidget::on_hwSaveButton_clicked(){
+    profileAboutToChange();
     device->save();
     device->hwSave();
     updateProfileList();
@@ -461,31 +462,58 @@ void KbWidget::on_pollRateBox_currentIndexChanged(const QString& arg1) {
     device->setPollRate(arg1.left(1));
 }
 
-// Returns _false_ if a match is found
+// Returns true if a match is found
 static inline bool checkForWinInfoMatch(KbWindowInfo* kbinfo, XWindowInfo* wininfo) {
     if(kbinfo->isEmpty() || !kbinfo->isEnabled())
-        return true;
+        return false;
 
-    Qt::CaseSensitivity sensitivity = Qt::CaseSensitive;
-    if(kbinfo->windowTitleCaseInsensitive)
-        sensitivity = Qt::CaseInsensitive;
+    QVector<KbWindowInfo::MatchPair>& rules = kbinfo->items;
+    bool result = false;
+    for(int i = 0; i < rules.length(); i++){
+        const KbWindowInfo::MatchPair& mp = rules.at(i);
 
-    // Check the window title first.
-    if(!kbinfo->windowTitle.isEmpty()){
-        if(kbinfo->windowTitleSubstr && wininfo->windowTitle.contains(kbinfo->windowTitle, sensitivity))
+        Qt::CaseSensitivity sensitivity = Qt::CaseSensitive;
+        if(mp.flags.testFlag(KbWindowInfo::MATCH_CASE_INSENSITIVE))
+            sensitivity = Qt::CaseInsensitive;
+
+        const QString* target = nullptr;
+
+        switch(mp.type){
+        case KbWindowInfo::MATCH_TYPE_WINDOW_TITLE:
+            target = &wininfo->windowTitle;
+            break;
+        case KbWindowInfo::MATCH_TYPE_PROGRAM_PATH:
+            target = &wininfo->program;
+            break;
+        case KbWindowInfo::MATCH_TYPE_WM_CLASS_NAME:
+            target = &wininfo->wm_class_name;
+            break;
+        case KbWindowInfo::MATCH_TYPE_WM_INSTANCE_NAME:
+            target = &wininfo->wm_instance_name;
+            break;
+        default:
+            qDebug() << "Invalid match type" << mp.type;
             return false;
+        }
 
-        if(!wininfo->windowTitle.compare(kbinfo->windowTitle, sensitivity))
-            return false;
+        // Do the comparison
+        if(mp.flags.testFlag(KbWindowInfo::MATCH_SUBSTRING))
+            result = target->contains(mp.item, sensitivity);
+        else if(mp.flags.testFlag(KbWindowInfo::MATCH_STARTS_WITH))
+            result = target->startsWith(mp.item, sensitivity);
+        else if(mp.flags.testFlag(KbWindowInfo::MATCH_ENDS_WITH))
+            result = target->endsWith(mp.item, sensitivity);
+        else
+            result = !target->compare(mp.item, sensitivity);
+
+        // If it's an OR and we found a match, return immediately
+        // If it's an AND and we haven't found a match, also return immediately
+        if(mp.op == KbWindowInfo::MATCH_OP_OR && result)
+            break;
+        else if(mp.op == KbWindowInfo::MATCH_OP_AND && !result)
+            break;
     }
-    // Then the program executable/binary
-    if(!kbinfo->program.isEmpty() && kbinfo->program == wininfo->program)
-        return false;
-
-    if(!kbinfo->wm_class_name.isEmpty() && kbinfo->wm_class_name == wininfo->wm_class_name)
-        return false;
-
-    return kbinfo->wm_instance_name.isEmpty() || kbinfo->wm_instance_name != wininfo->wm_instance_name;
+    return result;
 }
 
 void KbWidget::switchToModeByFocus(XWindowInfo win) {
@@ -497,7 +525,7 @@ void KbWidget::switchToModeByFocus(XWindowInfo win) {
     for(int i = 0; i < len; i++)
     {
         KbMode* loopMode = currentProfile->modes().at(i);
-        if(checkForWinInfoMatch(loopMode->winInfo(), &win))
+        if(!checkForWinInfoMatch(loopMode->winInfo(), &win))
             continue;
 
         if(!prevmode)

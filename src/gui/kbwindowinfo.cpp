@@ -3,16 +3,13 @@
 #include "kbmode.h"
 
 KbWindowInfo::KbWindowInfo(KbMode* parent) :
-    QObject(parent), windowTitle(QString()), windowTitleCaseInsensitive(false), windowTitleSubstr(false),
-    program(QString()), wm_instance_name(QString()), wm_class_name(QString()), enabled(false)
+    QObject(parent), items(), enabled(false)
 {
     _needsSave = true;
 }
 
 KbWindowInfo::KbWindowInfo(KbMode* parent, const KbWindowInfo &other) :
-    QObject(parent), windowTitle(other.windowTitle), windowTitleCaseInsensitive(other.windowTitleCaseInsensitive),
-    windowTitleSubstr(other.windowTitleSubstr), program(other.program), wm_instance_name(other.wm_instance_name),
-    wm_class_name(other.wm_class_name), enabled(other.enabled)
+    QObject(parent), items(other.items), enabled(other.enabled)
 {
     _needsSave = true;
 }
@@ -23,26 +20,32 @@ void KbWindowInfo::load(CkbSettingsBase& settings){
 
     SGroup group(settings, "WindowInfo");
     enabled = settings.value("enabled", false).toBool();
-    windowTitle = settings.value("windowTitle", "").toString();
-    windowTitleCaseInsensitive = settings.value("windowTitleCaseInsensitive", false).toBool();
-    windowTitleSubstr = settings.value("windowTitleSubstr", false).toBool();
-    program = settings.value("program", "").toString();
-
-    // Linux specific
-    wm_instance_name = settings.value("wm_instance_name", "").toString();
-    wm_class_name = settings.value("wm_class_name", "").toString();
+    SGroup rulegroup(settings, "Rules");
+    QStringList children = settings.childGroups();
+    for(int i = 0; i < children.count(); i++){
+        SGroup currentrule(settings, QString::number(i));
+        MatchPair mp;
+        mp.type = static_cast<MatchType>(settings.value("type").toInt());
+        mp.item = settings.value("item").toString();
+        mp.flags = MatchFlags(settings.value("flags").toInt());
+        mp.op = static_cast<MatchOperator>(settings.value("op").toInt());
+        items.append(mp);
+    }
 }
 
 void KbWindowInfo::save(CkbSettingsBase& settings){
     if(typeid(settings) == typeid(CkbSettings))
         _needsSave = false;
+
     SGroup group(settings, "WindowInfo");
     settings.setValue("enabled", enabled);
-    settings.setValue("windowTitle", windowTitle);
-    settings.setValue("windowTitleCaseInsensitive", windowTitleCaseInsensitive);
-    settings.setValue("windowTitleSubstr", windowTitleSubstr);
-    settings.setValue("program", program);
-
-    settings.setValue("wm_instance_name", wm_instance_name);
-    settings.setValue("wm_class_name", wm_class_name);
+    SGroup rulegroup(settings, "Rules");
+    for(int i = 0; i < items.count(); i++){
+        SGroup currentrule(settings, QString::number(i));
+        const MatchPair& mp = items.at(i);
+        settings.setValue("type", mp.type);
+        settings.setValue("item", mp.item);
+        settings.setValue("flags", static_cast<int>(mp.flags));
+        settings.setValue("op", static_cast<int>(mp.op));
+    }
 }

@@ -5,6 +5,8 @@
 #include <QDialog>
 #include "kbwindowinfo.h"
 #include <QTableWidgetItem>
+#include "kbwindowinfomodel.h"
+#include <QVector>
 
 namespace Ui {
 class KbModeEventMgr;
@@ -19,17 +21,21 @@ public:
     ~KbModeEventMgr();
     virtual void closeEvent(QCloseEvent* evt);
 
-
 private slots:
     void on_cancelBtn_clicked();
     void on_okBtn_clicked();
-    void on_clearbtn_clicked();
-    void on_browseButton_clicked();
+    void on_addbtn_clicked();
+    void on_removebtn_clicked();
+    void rowsChanged(const QModelIndex& parent, int first, int last);
+    void on_clearbtn_2_clicked();
 
 private:
     KbWindowInfo* info;
     Ui::KbModeEventMgr* ui;
     void handleClose();
+    KbWindowInfoModel* model;
+    QVector<KbWindowInfo::MatchPair> backup;
+    KbWindowInfoModelDropdownDelegate* delegate;
 };
 
 #endif // KBMODEEVENTMGR_H

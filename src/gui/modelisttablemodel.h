@@ -40,7 +40,7 @@ public:
         activeRow = row;
         emit dataChanged(index(0, COL_EVENT_ICON), index(rowCount()-1, COL_EVENT_ICON), {Qt::BackgroundRole});
     }
-private slots:
+public slots:
     void profileAboutToChange();
     void profileChanged();
 private:

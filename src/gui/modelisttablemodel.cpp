@@ -5,7 +5,7 @@
 #include <QStyle>
 #include <QStyledItemDelegate>
 
-ModeListTableModel::ModeListTableModel(Kb*dev, QObject*parent) : QAbstractTableModel(parent), device(dev),
+ModeListTableModel::ModeListTableModel(Kb *dev, QObject* parent) : QAbstractTableModel(parent), device(dev),
     highlightedRow(-1), _hasFocus(false)
 {
     connect(device, &Kb::profileAboutToChange, this, &ModeListTableModel::profileAboutToChange);

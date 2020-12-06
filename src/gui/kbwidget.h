@@ -6,6 +6,8 @@
 #include <QWidget>
 #include "kb.h"
 #include "xcb/xwindowdetector.h"
+#include "modelisttablemodel.h"
+#include "ui_kbwidget.h"
 
 // Central widget for displaying/controlling a device
 
@@ -51,6 +53,12 @@ private:
 
     KbMode* prevmode;
     void openEventMgr(KbMode* mode);
+    // These profileAboutToChange/profileChanged functions should be removed at some point
+    // and have all the work from the context menu done in the model
+    // so that it can emit the appropriate signals
+    // instead of resetting the whole thing
+    inline void profileAboutToChange() { dynamic_cast<ModeListTableModel*>(ui->modesList->model())->profileAboutToChange(); }
+    inline void profileChanged() { dynamic_cast<ModeListTableModel*>(ui->modesList->model())->profileChanged(); }
 private slots:
     void updateProfileList();
     void on_profileBox_activated(int index);
