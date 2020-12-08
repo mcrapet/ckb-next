@@ -37,6 +37,8 @@ KbModeEventMgr::KbModeEventMgr(QWidget* parent, KbMode* m) :
         if(col != KbWindowInfoModel::COL_TARGET)
             ui->tableView->resizeColumnToContents(col);
     });
+    if(model->rowCount() > 0)
+        ui->tableView->setCurrentIndex(model->index(0, 0));
 }
 
 KbModeEventMgr::~KbModeEventMgr()
