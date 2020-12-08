@@ -93,7 +93,7 @@ void ModeListWidget::setDevice(Kb* dev){
 
 #ifndef USE_XCB_EWMH
     floatingView->horizontalHeader()->setSectionHidden(2, true);
-    floatingView->hide()
+    floatingView->hide();
 #endif
 }
 
