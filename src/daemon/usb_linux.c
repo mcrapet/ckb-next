@@ -264,14 +264,15 @@ void os_sendindicators(usbdevice* kb) {
     static int countForReset = 0;
     void *ileds;
     ushort leds;
-    if(kb->fwversion >= 0x300 || IS_V3_OVERRIDE(kb)) {
+    if(kb->fwversion >= 0x300 || IS_V3_OVERRIDE(kb) || kb->protocol == PROTO_BRAGI) {
         leds = (kb->ileds << 8) | 0x0001;
         ileds = &leds;
-    }
-    else {
+    } else {
         ileds = &kb->ileds;
     }
-    struct usbdevfs_ctrltransfer transfer = { 0x21, 0x09, 0x0200, 0x00, ((kb->fwversion >= 0x300 || IS_V3_OVERRIDE(kb)) ? 2 : 1), 500, ileds };
+    struct usbdevfs_ctrltransfer transfer = { 0x21, 0x09, 0x0200, 0x00, ((kb->fwversion >= 0x300 || IS_V3_OVERRIDE(kb) || kb->protocol == PROTO_BRAGI) ? 2 : 1), 500, ileds };
+    if(kb->protocol == PROTO_BRAGI)
+        transfer.wValue += 1;
     queued_mutex_unlock(dmutex(kb));
     int res = ioctl(kb->handle - 1, USBDEVFS_CONTROL, &transfer);
     queued_mutex_lock(dmutex(kb));
