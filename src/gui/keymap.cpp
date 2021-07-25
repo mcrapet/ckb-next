@@ -221,6 +221,10 @@ static void patchABNT2(QHash<QString, Key>& map){
 #define K95P_X_START     20
 #define K95P_WIDTH       (K95_WIDTH - K95P_X_START + 1)
 
+#define K100_WIDTH       K95P_WIDTH
+#define K100_HEIGHT      K95P_HEIGHT
+#define K100_X_START     K95P_X_START
+
 // K70 cuts off the G keys on the left, as well as MR/M1/M2/M3
 #define K70_X_START     38
 #define K70_WIDTH       (K95_WIDTH - K70_X_START)
@@ -575,6 +579,7 @@ static QHash<QString, Key> getMap(KeyMap::Model model, KeyMap::Layout layout){
         // Done! return the map
         break;
     }
+    case KeyMap::K100:
     case KeyMap::K95P:{
         // The K95 Platinum map is based on the K95
         map = getMap(KeyMap::K95, layout);
@@ -1207,6 +1212,8 @@ KeyMap::Model KeyMap::getModel(const QString& name){
         return K95;
     if(lower == "k95p")
         return K95P;
+    if(lower == "k100")
+        return K100;
     if(lower == "strafe")
         return STRAFE;
     if(lower == "m65")
@@ -1262,6 +1269,8 @@ QString KeyMap::getModel(KeyMap::Model model){
         return "k95";
     case K95P:
         return "k95P";
+    case K100:
+        return "k100";
     case STRAFE:
         return "strafe";
     case M65:
@@ -1325,6 +1334,8 @@ int KeyMap::modelWidth(Model model){
     case K95P:
     case K55:
         return K95P_WIDTH;
+    case K100:
+         return K100_WIDTH;
     case STRAFE:
     case STRAFE_MK2:
         return KSTRAFE_WIDTH;
@@ -1364,6 +1375,8 @@ int KeyMap::modelHeight(Model model){
         return K95_HEIGHT;
     case K95P:
         return K95P_HEIGHT;
+    case K100:
+        return K100_HEIGHT;
     case M65:
     case M65E:
     case SABRE:

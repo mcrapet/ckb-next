@@ -10,9 +10,9 @@ void bragi_fill_input_eps(usbdevice* kb)
 
 int bragi_usb_write(usbdevice* kb, void* out, int len, int is_recv, const char* file, int line)
 {
-    if(len != 64)
+    if(len != MSG_SIZE)
     {
-        ckb_fatal_fn("len != 64 not yet supported in Bragi backend", file, line);
+        ckb_fatal_fn("len != %d not yet supported in Bragi backend (len=%d)", file, line, MSG_SIZE, len);
         return -1;
     }
 
@@ -23,7 +23,7 @@ int bragi_usb_write(usbdevice* kb, void* out, int len, int is_recv, const char* 
 
     // All firmware versions for normal HID devices have the OUT endpoint at the end
     // Devices with no input, such as the Polaris, have it at the start.
-    unsigned int ep = (IS_SINGLE_EP(kb) ? 1 : kb->epcount);
+    unsigned int ep = 1; //(IS_SINGLE_EP(kb) ? 1 : kb->epcount);
     int res = os_usb_interrupt_out(kb, ep, len, out, file, line);
     // Unlock on failure
     if(is_recv && res < 1)
@@ -33,9 +33,9 @@ int bragi_usb_write(usbdevice* kb, void* out, int len, int is_recv, const char* 
 
 int bragi_usb_read(usbdevice* kb, void* in, int len, int dummy, const char* file, int line)
 {
-    if(len != 64)
+    if(len != MSG_SIZE)
     {
-        ckb_fatal_fn("len != 64 not yet supported in Bragi backend", file, line);
+        ckb_fatal_fn("len != %d not yet supported in Bragi backend", file, line, MSG_SIZE);
         return -1;
     }
 

@@ -42,21 +42,21 @@ int updatergb_keyboard_bragi(usbdevice* kb, int force){
     // First packet is ready as-is
     pkt = rgb_pkt;
 #warning "Check if the device responded with success"
-    uchar response[64] = {0};
+    uchar response[MSG_SIZE] = {0};
     if(!usbrecv(kb, pkt, MSG_SIZE, response))
         return 1;
 
     // Second to eigth packet
     // Get to the end of the last packet, go back 3 bytes and insert the header for the continue write
-    while((pkt += 64) < rgb_pkt + BRAGI_RGB_PKT_SIZE) {
-        pkt -= 3;
-        pkt[0] = BRAGI_MAGIC;
-        pkt[1] = BRAGI_CONTINUE_WRITE;
-        pkt[2] = BRAGI_LIGHTING_HANDLE;
-        // Send the new packet
-        if(!usbrecv(kb, pkt, MSG_SIZE, response))
-            return 1;
-    }
+    //while((pkt += 64) < rgb_pkt + BRAGI_RGB_PKT_SIZE) {
+    //    pkt -= 3;
+    //    pkt[0] = BRAGI_MAGIC;
+    //    pkt[1] = BRAGI_CONTINUE_WRITE;
+    //    pkt[2] = BRAGI_LIGHTING_HANDLE;
+    //    // Send the new packet
+    //    if(!usbrecv(kb, pkt, MSG_SIZE, response))
+    //        return 1;
+    //}
 
     memcpy(lastlight, newlight, sizeof(lighting));
     return 0;

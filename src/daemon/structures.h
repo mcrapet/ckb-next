@@ -217,7 +217,7 @@ typedef enum protocol_
 // Structure for tracking keyboard/mouse devices
 #define KB_NAME_LEN 64
 #define SERIAL_LEN  34
-#define MSG_SIZE    64
+#define MSG_SIZE    1024
 #define MAX_MSG_SIZE 1024
 #define IFACE_MAX   4
 #define USB_EP_MAX  16
