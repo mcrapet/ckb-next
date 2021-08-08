@@ -27,7 +27,7 @@ int bragi_usb_write(usbdevice* kb, void* out, int len, int is_recv, const char* 
         pkt[0] |= kb->bragi_child_id;
         res = os_usb_interrupt_out(kb->parent, kb->parent->epcount, kb->parent->out_ep_packet_size, out, file, line);
     } else {
-        res = os_usb_interrupt_out(kb, kb->epcount, kb->out_ep_packet_size, out, file, line);
+        res = os_usb_interrupt_out(kb, 1, kb->out_ep_packet_size, out, file, line);
     }
     // Unlock on failure
     if(is_recv && res < 1)

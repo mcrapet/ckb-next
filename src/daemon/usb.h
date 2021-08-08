@@ -84,7 +84,9 @@
 #define P_K95_LEGACY         0x1b08
 #define P_K95_PLATINUM       0x1b2d
 #define P_K95_PLATINUM_XT    0x1b89 // Don't think this needs to be in the macro
-#define IS_K95(kb)           ((kb)->vendor == V_CORSAIR && ((kb)->product == P_K90_LEGACY || (kb)->product == P_K95 || (kb)->product == P_K95_LEGACY || (kb)->product == P_K95_PLATINUM))
+#define P_K100_OPX           0x1b7c // Optical-Mechanical
+//#define P_K100_CHERRY_MX   0x1b?? // Mechanical
+#define IS_K95(kb)           ((kb)->vendor == V_CORSAIR && ((kb)->product == P_K90_LEGACY || (kb)->product == P_K95 || (kb)->product == P_K95_LEGACY || (kb)->product == P_K95_PLATINUM || (kb)->product == P_K100_OPX))
 
 #define P_STRAFE             0x1b20
 #define P_STRAFE_NRGB        0x1b15 /* 3-bit lighting, 9-bit protocol */
@@ -270,10 +272,10 @@ const char* product_str(ushort product);
 #define USB_DELAY_DEFAULT   5
 
 // This should be removed in the future when we implement autodetection
-#define USES_BRAGI(vendor, product)                  ((vendor) == (V_CORSAIR) && ((product) == (P_IRONCLAW_W_U) || (product) == (P_IRONCLAW_W_D) || (product) == (P_K95_PLATINUM_XT) || (product) == (P_DARK_CORE_RGB_PRO_SE) || (product) == (P_DARK_CORE_RGB_PRO_SE_WL)))
+#define USES_BRAGI(vendor, product)                  ((vendor) == (V_CORSAIR) && ((product) == (P_IRONCLAW_W_U) || (product) == (P_IRONCLAW_W_D) || (product) == (P_K95_PLATINUM_XT) || (product) == (P_DARK_CORE_RGB_PRO_SE) || (product) == (P_DARK_CORE_RGB_PRO_SE_WL) || (product) == (P_K100_OPX)))
 
 // Devices that use bragi jumbo packets (1024 bytes)
-#define USES_BRAGI_JUMBO(vendor, product)           ((vendor) == (V_CORSAIR) && 0)
+#define USES_BRAGI_JUMBO(vendor, product)           ((vendor) == (V_CORSAIR) && ((product) == (P_K100_OPX) || 0))
 
 /// Start the USB main loop. Returns program exit code when finished
 int usbmain();

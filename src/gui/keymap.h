@@ -59,6 +59,7 @@ public:
         K70,
         K95,
         K95P,
+        K100,
         STRAFE,
         M65,
         SABRE,
