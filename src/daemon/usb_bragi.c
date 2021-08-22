@@ -25,7 +25,7 @@ int bragi_usb_write(usbdevice* kb, void* out, int len, int is_recv, const char* 
     if(kb->parent){
         unsigned char* pkt = out;
         pkt[0] |= kb->bragi_child_id;
-        res = os_usb_interrupt_out(kb->parent, kb->parent->epcount, kb->parent->out_ep_packet_size, out, file, line);
+        res = os_usb_interrupt_out(kb->parent, 1, kb->parent->out_ep_packet_size, out, file, line);
     } else {
         res = os_usb_interrupt_out(kb, 1, kb->out_ep_packet_size, out, file, line);
     }
